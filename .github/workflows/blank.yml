@@ -1,0 +1,32 @@
+name: Deploy POC
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: Environment
+        required: true
+        type: choice
+        options:
+          - dev
+          - sit
+          - uat
+          - uat-pentest
+          - production
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    environment:
+      name: ${{ inputs.environment }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Show deployment info
+        run: |
+          echo "Deploying..."
+          echo "Environment: ${{ inputs.environment }}"
+          echo "Commit: ${{ github.sha }}"
+          echo "Branch: ${{ github.ref_name }}"
