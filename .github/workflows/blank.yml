@@ -11,8 +11,8 @@ on:
           - dev
           - sit
           - uat
-          - uat-pentest
-          - production
+          - pentest
+          - prod
 
 jobs:
   deploy:
