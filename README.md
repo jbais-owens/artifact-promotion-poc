@@ -1,3 +1,4 @@
 # artifact-promotion-poc
 
-changes on b300/feat1
+1. changes on b300/feat1
+2. changes on b300
