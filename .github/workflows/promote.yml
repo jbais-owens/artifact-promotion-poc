@@ -22,24 +22,33 @@ jobs:
     environment: ${{ inputs.environment }}
 
     steps:
+      - name: Generate Branch Slug
+        id: slug
+        run: |
+          echo "slug=$(echo "${GITHUB_REF_NAME}" | tr '/' '-')" >> $GITHUB_OUTPUT
+
       - name: Download RC
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          SLUG=$(echo "${GITHUB_REF_NAME}" | tr '/' '-')
-
           ID=$(gh api \
-            "repos/${{ github.repository }}/actions/artifacts?name=rc-${SLUG}&per_page=1" \
+            "repos/${{ github.repository }}/actions/artifacts?name=rc-${{ steps.slug.outputs.slug }}&per_page=1" \
             --jq '.artifacts[0].id')
+
+          if [ -z "$ID" ]; then
+            echo "No RC artifact found."
+            exit 1
+          fi
 
           gh api \
             "repos/${{ github.repository }}/actions/artifacts/${ID}/zip" \
             > rc.zip
 
-          unzip rc.zip
+          unzip -q rc.zip
 
       - name: Show RC
-        run: cat rc.txt
+        run: |
+          cat rc.txt
 
       - name: Promote
         run: |
