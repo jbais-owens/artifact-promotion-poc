@@ -16,6 +16,11 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
+      - name: Generate Branch Slug
+        id: slug
+        run: |
+          echo "slug=$(echo "${GITHUB_REF_NAME}" | tr '/' '-')" >> $GITHUB_OUTPUT
+
       - name: Verify Release PR Exists
         env:
           GH_TOKEN: ${{ github.token }}
@@ -49,7 +54,6 @@ jobs:
 
       - name: Build RC
         run: |
-          echo "Building RC..."
           echo "branch=${GITHUB_REF_NAME}" > rc.txt
           echo "sha=${GITHUB_SHA}" >> rc.txt
           echo "built=$(date -u)" >> rc.txt
@@ -57,8 +61,9 @@ jobs:
       - name: Upload RC Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: rc-${{ github.ref_name }}
+          name: rc-${{ steps.slug.outputs.slug }}
           path: rc.txt
 
       - name: Deploy DEV
-        run: echo "Deploying to DEV"
+        run: |
+          echo "Deploying to DEV"
