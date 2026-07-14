@@ -1,0 +1,64 @@
+name: Build DEV
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: read
+  actions: read
+
+jobs:
+  build-dev:
+    runs-on: ubuntu-latest
+    environment: dev
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Verify Release PR Exists
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          COUNT=$(gh pr list \
+            --base main \
+            --head "${GITHUB_REF_NAME}" \
+            --state open \
+            --json number \
+            --jq 'length')
+
+          if [ "$COUNT" -eq 0 ]; then
+            echo "No open release PR found."
+            exit 1
+          fi
+
+      - name: Verify Validation Passed
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          SHA="${GITHUB_SHA}"
+
+          COUNT=$(gh api \
+            "repos/${{ github.repository }}/actions/workflows/validation.yml/runs?head_sha=${SHA}" \
+            --jq '[.workflow_runs[] | select(.conclusion=="success")] | length')
+
+          if [ "$COUNT" -eq 0 ]; then
+            echo "Validation has not passed for current SHA."
+            exit 1
+          fi
+
+      - name: Build RC
+        run: |
+          echo "Building RC..."
+          echo "branch=${GITHUB_REF_NAME}" > rc.txt
+          echo "sha=${GITHUB_SHA}" >> rc.txt
+          echo "built=$(date -u)" >> rc.txt
+
+      - name: Upload RC Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: rc-${{ github.ref_name }}
+          path: rc.txt
+
+      - name: Deploy DEV
+        run: echo "Deploying to DEV"
