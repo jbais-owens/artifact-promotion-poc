@@ -1,0 +1,35 @@
+name: Release
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Create Tag
+        run: |
+          TAG="v0.1.$(date +%s)"
+
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+
+          git tag "$TAG"
+          git push origin "$TAG"
+
+          echo "TAG=$TAG" >> $GITHUB_ENV
+
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create \
+            "$TAG" \
+            --title "$TAG" \
+            --notes "Demo release"
