@@ -7,3 +7,5 @@ changes on b300
 
 8-issue-for-sprint-b302
 -issue fix
+
+changes on B304
