@@ -10,3 +10,5 @@ changes on b300
 
 changes on B304
 changes on B305
+
+changes on B306
